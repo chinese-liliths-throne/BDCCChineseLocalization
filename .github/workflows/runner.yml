@@ -253,12 +253,12 @@ jobs:
           echo "${{ secrets.ANDROID_KEYSTORE_FILE }}" | base64 --decode > $GITHUB_WORKSPACE/debug.keystore
           sed 's@keystore/debug=".*"@keystore/debug="'$GITHUB_WORKSPACE/debug.keystore'"@g' -i export_presets.cfg
           sed 's@keystore/release=".*"@keystore/release="'$GITHUB_WORKSPACE/debug.keystore'"@g' -i export_presets.cfg
-          godot --headless --export-debug "Android" ../build/android/${EXPORT_NAME}-debug.apk
+          godot --headless --export-debug "Android" ../build/android/${EXPORT_NAME}-Android.apk
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: bdcc-android
-          path: ./build/android/BDCC-debug.apk
+          path: ./build/android/BDCC-Android.apk
   
   
   release:
