@@ -56,7 +56,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bdcc-chinese-translation
-          path: ./BdccChineseLocalization.zip
+          path: ./Bdcc-postLocalization-test.zip
           retention-days: 7
   
   window-build:
