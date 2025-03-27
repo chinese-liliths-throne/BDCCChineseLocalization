@@ -56,7 +56,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bdcc-chinese-translation
-          path: ./Bdcc-postLocalization-test.zip
+          path: ./BdccChineseLocalization.zip
           retention-days: 7
   
   window-build:
@@ -276,6 +276,7 @@ jobs:
         id: release-selector
         run: |
           echo "RELEASE_VERSION=$(date "+%y.%m.%d")" >> $GITHUB_OUTPUT
+          mv ./BdccChineseLocalization.zip ./bdcc-locationlization-test.zip
       - name: Automatic Pre Releases
         uses: ncipollo/release-action@v1.14.0
         with:
