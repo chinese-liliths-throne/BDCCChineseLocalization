@@ -276,7 +276,7 @@ jobs:
         id: release-selector
         run: |
           echo "RELEASE_VERSION=$(date "+%y.%m.%d")" >> $GITHUB_OUTPUT
-          mv ./BdccChineseLocalization.zip ./bdcc-locationlization-test.zip
+          mv ./BdccChineseLocalization.zip ./source-code-for-test.zip
       - name: Automatic Pre Releases
         uses: ncipollo/release-action@v1.14.0
         with:
