@@ -9,7 +9,7 @@ on:
 permissions: write-all
 
 env:
-  GODOT_VERSION: "3.5.2"
+  GODOT_VERSION: "3.6"
   PARATRANZ_TOKEN: ${{ secrets.PARATRANZ_TOKEN }}
   PARATRANZ_PROJECT: ${{ secrets.PARATRANZ_PROJECT }}
   EXPORT_NAME: BDCC
@@ -64,7 +64,7 @@ jobs:
     needs: translate
     runs-on: ubuntu-22.04
     container:
-      image: barichello/godot-ci:3.5.2
+      image: barichello/godot-ci:3.6
     steps:
       - name: Check Submodules
         uses: actions/checkout@v4
@@ -101,7 +101,7 @@ jobs:
     needs: translate
     runs-on: ubuntu-22.04
     container:
-      image: barichello/godot-ci:3.5.2
+      image: barichello/godot-ci:3.6
     steps:
       - name: Check Submodules
         uses: actions/checkout@v4
@@ -140,7 +140,7 @@ jobs:
     needs: translate
     runs-on: ubuntu-22.04
     container:
-      image: barichello/godot-ci:3.5.2
+      image: barichello/godot-ci:3.6
     steps:
       - name: Check Submodules
         uses: actions/checkout@v4
@@ -177,7 +177,7 @@ jobs:
     needs: translate
     runs-on: ubuntu-22.04
     container:
-      image: barichello/godot-ci:3.5.2
+      image: barichello/godot-ci:3.6
     steps:
       - name: Check Submodules
         uses: actions/checkout@v4
@@ -224,7 +224,7 @@ jobs:
     needs: translate
     runs-on: ubuntu-22.04
     container:
-      image: barichello/godot-ci:3.5.2
+      image: barichello/godot-ci:3.6
     steps:
       - name: Check Submodules
         uses: actions/checkout@v4
