@@ -52,6 +52,15 @@ jobs:
         env:
           PYTHONIOENCODING: utf-8  # 如果是 Python 脚本
         run: dotnet run --project BDCCChineseLocalization Translate ${{ env.PARATRANZ_TOKEN }} ${{ env.PARATRANZ_PROJECT }}
+
+      - name: Upload translation artifact when failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: bdcc-chinese-translation
+          path: ./BdccChineseLocalization.zip
+          retention-days: 7
+        
       - name: Upload translation artifact
         uses: actions/upload-artifact@v4
         with:
