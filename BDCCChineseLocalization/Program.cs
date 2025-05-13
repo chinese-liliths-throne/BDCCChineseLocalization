@@ -306,17 +306,25 @@ public class Program
         // sourceStream.Close();
         // destinationStream.Close();
 
-        await PythonTranslateReplace();
-
-        var zipFilePath = Path.Combine(currentDir, "BdccChineseLocalization.zip");
-        if (File.Exists(zipFilePath))
-        {
-            File.Delete(zipFilePath);
+        try {
+            await PythonTranslateReplace();
         }
-        ZipFile.CreateFromDirectory(
-            Path.Combine(bdccLocalizationReplacerPath, "output"),
-            Path.Combine(currentDir, "BdccChineseLocalization.zip")
-        );
+        catch (PythonException e)
+        {
+            throw e;
+        }
+        finally
+        {
+            var zipFilePath = Path.Combine(currentDir, "BdccChineseLocalization.zip");
+            if (File.Exists(zipFilePath))
+            {
+                File.Delete(zipFilePath);
+            }
+            ZipFile.CreateFromDirectory(
+                Path.Combine(bdccLocalizationReplacerPath, "output"),
+                Path.Combine(currentDir, "BdccChineseLocalization.zip")
+            );
+        }
     }
 
     static void CopyDirectory(string sourceDir, string destinationDir, bool recursive)
