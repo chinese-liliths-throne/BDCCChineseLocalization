@@ -2,7 +2,7 @@ name: Build BDDC Chinese Localization Nightly
 on:
   workflow_dispatch:
   schedule:
-    - cron: '15 13 * * *'
+    - cron: '30 0,4,8,12,16 * * *'
   push:
   pull_request:
 
@@ -262,7 +262,7 @@ jobs:
           echo "${{ secrets.ANDROID_KEYSTORE_FILE }}" | base64 --decode > $GITHUB_WORKSPACE/debug.keystore
           sed 's@keystore/debug=".*"@keystore/debug="'$GITHUB_WORKSPACE/debug.keystore'"@g' -i export_presets.cfg
           sed 's@keystore/release=".*"@keystore/release="'$GITHUB_WORKSPACE/debug.keystore'"@g' -i export_presets.cfg
-          godot --headless --export-debug "Android" ../build/android/${EXPORT_NAME}-Android.apk
+          godot --headless --export "Android" ../build/android/${EXPORT_NAME}-Android.apk
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
