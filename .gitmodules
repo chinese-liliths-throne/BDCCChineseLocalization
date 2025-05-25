@@ -1,7 +1,7 @@
 [submodule "BDCC"]
 	path = BDCC
-	url = https://github.com/Alexofp/BDCC
-	branch = main
+	url = https://github.com/CKRainbow/BDCC
+	branch = chinese
 [submodule "Paratranz.NET"]
 	path = Paratranz.NET
 	url = https://github.com/Mochacola500/Paratranz.NET/
