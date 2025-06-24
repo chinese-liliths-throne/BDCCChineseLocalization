@@ -335,7 +335,7 @@ jobs:
             exit
           fi
           
-          echo "RELEASE_VERSION=$RV" >> $GITHUB_ENV
+          echo "RELEASE_VERSION=$RV" >> $GITHUB_OUTPUT
           echo "Current version is $RV"
       - name: Save source code for test
         run: |
