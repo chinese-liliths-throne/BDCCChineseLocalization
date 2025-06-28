@@ -226,7 +226,8 @@ public class Program
     public async Task Translate(
         [Operand("api", Description = "Paratranz API Key")] string api,
         [CommandDotNet.Operand("projectID", Description = "Paratranz Project ID")] int projectId,
-        [Option('i', "input", Description = "项目路径")] string inputPath = "BDCC"
+        [Option('i', "input", Description = "项目路径")] string inputPath = "BDCC",
+        [Option('v', "version", Description = "汉化版本")] string version = "1.0.0"
     //, [Option('t', "translation", Description = "翻译项目路径")] string translation = "Output"
     )
     {
@@ -306,7 +307,8 @@ public class Program
         // sourceStream.Close();
         // destinationStream.Close();
 
-        try {
+        try
+        {
             await PythonTranslateReplace();
         }
         catch (PythonException e)
@@ -315,6 +317,18 @@ public class Program
         }
         finally
         {
+            // replace `TRANSLATION_VERSION_HERE` with variable `version` in mainManu.gd
+            var mainManuPath = Path.Combine(
+                bdccLocalizationReplacerPath,
+                "output",
+                "UI",
+                "MainMenu",
+                "MainMenu.gd"
+            );
+            var mainManuContent = File.ReadAllText(mainManuPath);
+            mainManuContent = mainManuContent.Replace("TRANSLATION_VERSION_HERE", version);
+            File.WriteAllText(mainManuPath, mainManuContent);
+
             var zipFilePath = Path.Combine(currentDir, "BdccChineseLocalization.zip");
             if (File.Exists(zipFilePath))
             {

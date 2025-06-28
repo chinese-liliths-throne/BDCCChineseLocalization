@@ -1,4 +1,4 @@
-name: Build BDDC Chinese Localization Nightly
+name: Build BDCC Chinese Localization Nightly
 on:
   workflow_dispatch:
   schedule:
@@ -17,9 +17,72 @@ env:
   EXPORT_NAME: BDCC
 
 jobs:
+  get-tag:
+    name: 📌 Get Tag
+    runs-on: ubuntu-22.04
+    outputs:
+      release_version: ${{ steps.release-selector.outputs.RELEASE_VERSION }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Set pre-release version
+        if: github.event.schedule == '30 12 * * *' || github.event_name == 'workflow_dispatch'
+        id: daily-version
+        run: |
+          echo "RELEASE_VERSION=$(date "+%y.%m.%d")" >> $GITHUB_OUTPUT
+      - name: Set auto-bump release version
+        if: github.event.schedule == '0 14 1 * *'
+        id: auto-bump-version
+        run: |
+          # get the newest tag and bump the version, for example: v0.1.8fix3-chs-1.0.2a -> v0.1.8fix3-chs-1.1.0a
+          # ORIGINAL_VERSION: v0.1.8fix3
+          # get the newest tag
+          NEWEST_TAG=$(git tag -l "v*" --sort=-version:refname | head -n 1)
+          # get the version number
+          VERSION_NUMBER=$(echo $NEWEST_TAG | awk -F '-' '{print $NF}')
+          ORIGINAL_VERSION=$(echo $NEWEST_TAG | awk -F '-' '{print $1}')
+          # get the version number by delete the last character (might be a, b or r)
+          VERSION_NUMBER_WITHOUT_SUFFIX="${VERSION_NUMBER%?}"
+          VERSION_TYPE="${VERSION_NUMBER: -1}"
+          # get all three version number
+          FIRST_VERSION_NUMBER=$(echo $VERSION_NUMBER_WITHOUT_SUFFIX | awk -F '.' '{print $1}')
+          SECOND_VERSION_NUMBER=$(echo $VERSION_NUMBER_WITHOUT_SUFFIX | awk -F '.' '{print $2}')
+          THIRD_VERSION_NUMBER=$(echo $VERSION_NUMBER_WITHOUT_SUFFIX | awk -F '.' '{print $3}')
+          # bump the second version number
+          NEW_VERSION_NUMBER=$(expr $SECOND_VERSION_NUMBER + 1)
+          # concat the version
+          NEW_VERSION=${ORIGINAL_VERSION}-chs-${FIRST_VERSION_NUMBER}.${NEW_VERSION_NUMBER}.0${VERSION_TYPE}
+          
+          echo "RELEASE_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
+      - name: Set push-tag release version
+        if: github.ref_type == 'tag'
+        id: push-tag-version
+        run: |
+          NEWEST_TAG=$(git tag -l "v*" --sort=-version:refname | head -n 1)
+          echo "RELEASE_VERSION=$NEWEST_TAG" >> $GITHUB_OUTPUT
+      - name: Set Release version env variable
+        id: release-selector
+        run: |
+          if [[ "${{ steps.daily-version.outputs.RELEASE_VERSION }}" != "" ]]; then
+            RV="${{ steps.daily-version.outputs.RELEASE_VERSION }}"
+          elif [[ "${{ steps.auto-bump-version.outputs.RELEASE_VERSION }}" != "" ]]; then
+            RV="${{ steps.auto-bump-version.outputs.RELEASE_VERSION }}"
+          elif [[ "${{ steps.push-tag-version.outputs.RELEASE_VERSION }}" != "" ]]; then
+            RV="${{ steps.push-tag-version.outputs.RELEASE_VERSION }}"
+          else
+            exit
+          fi
+          
+          echo "RELEASE_VERSION=$RV" >> $GITHUB_OUTPUT
+          echo "Current version is $RV"
+  
   translate:
     name: 🌐 Translate
     runs-on: windows-latest
+    needs: get-tag
     env:
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
@@ -53,8 +116,8 @@ jobs:
       - name: Run translation
         env:
           PYTHONIOENCODING: utf-8  # 如果是 Python 脚本
-        run: dotnet run --project BDCCChineseLocalization Translate ${{ env.PARATRANZ_TOKEN }} ${{ env.PARATRANZ_PROJECT }}
-
+        run: |
+          dotnet run --project BDCCChineseLocalization Translate ${{ env.PARATRANZ_TOKEN }} ${{ env.PARATRANZ_PROJECT }} -v ${{ needs.get-tag.outputs.release_version }}
       - name: Upload translation artifact when failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
@@ -274,7 +337,7 @@ jobs:
   
   release:
     name: 🚀 Release
-    needs: [ window-build, linux-build, macos-build, web-build,android-build ]
+    needs: [ window-build, linux-build, macos-build, web-build,android-build, get-tag ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.1.1
@@ -287,56 +350,6 @@ jobs:
         with:
           pattern: 'bdcc-*'
           merge-multiple: true
-      - name: Set pre-release version
-        if: github.event.schedule == '30 12 * * *' || github.event_name == 'workflow_dispatch'
-        id: daily-version
-        run: |
-          echo "RELEASE_VERSION=$(date "+%y.%m.%d")" >> $GITHUB_OUTPUT
-      - name: Set auto-bump release version
-        if: github.event.schedule == '0 14 1 * *'
-        id: auto-bump-version
-        run: |
-          # get the newest tag and bump the version, for example: v0.1.8fix3-chs-1.0.2a -> v0.1.8fix3-chs-1.1.0a
-          # ORIGINAL_VERSION: v0.1.8fix3
-          # get the newest tag
-          NEWEST_TAG=$(git tag -l "v*" --sort=-version:refname | head -n 1)
-          # get the version number
-          VERSION_NUMBER=$(echo $NEWEST_TAG | awk -F '-' '{print $NF}')
-          ORIGINAL_VERSION=$(echo $NEWEST_TAG | awk -F '-' '{print $1}')
-          # get the version number by delete the last character (might be a, b or r)
-          VERSION_NUMBER_WITHOUT_SUFFIX="${VERSION_NUMBER%?}"
-          VERSION_TYPE="${VERSION_NUMBER: -1}"
-          # get all three version number
-          FIRST_VERSION_NUMBER=$(echo $VERSION_NUMBER_WITHOUT_SUFFIX | awk -F '.' '{print $1}')
-          SECOND_VERSION_NUMBER=$(echo $VERSION_NUMBER_WITHOUT_SUFFIX | awk -F '.' '{print $2}')
-          THIRD_VERSION_NUMBER=$(echo $VERSION_NUMBER_WITHOUT_SUFFIX | awk -F '.' '{print $3}')
-          # bump the second version number
-          NEW_VERSION_NUMBER=$(expr $SECOND_VERSION_NUMBER + 1)
-          # concat the version
-          NEW_VERSION=${ORIGINAL_VERSION}-chs-${FIRST_VERSION_NUMBER}.${NEW_VERSION_NUMBER}.0${VERSION_TYPE}
-          
-          echo "RELEASE_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
-      - name: Set push-tag release version
-        if: github.ref_type == 'tag'
-        id: push-tag-version
-        run: |
-          NEWEST_TAG=$(git tag -l "v*" --sort=-version:refname | head -n 1)
-          echo "RELEASE_VERSION=$NEWEST_TAG" >> $GITHUB_OUTPUT
-      - name: Set Release version env variable
-        id: release-selector
-        run: |
-          if [[ "${{ steps.daily-version.outputs.RELEASE_VERSION }}" != "" ]]; then
-            RV="${{ steps.daily-version.outputs.RELEASE_VERSION }}"
-          elif [[ "${{ steps.auto-bump-version.outputs.RELEASE_VERSION }}" != "" ]]; then
-            RV="${{ steps.auto-bump-version.outputs.RELEASE_VERSION }}"
-          elif [[ "${{ steps.push-tag-version.outputs.RELEASE_VERSION }}" != "" ]]; then
-            RV="${{ steps.push-tag-version.outputs.RELEASE_VERSION }}"
-          else
-            exit
-          fi
-          
-          echo "RELEASE_VERSION=$RV" >> $GITHUB_OUTPUT
-          echo "Current version is $RV"
       - name: Save source code for test
         run: |
           mv ./BdccChineseLocalization.zip ./source-code-for-test.zip
@@ -358,7 +371,7 @@ jobs:
         uses: ncipollo/release-action@v1.14.0
         if: github.event.schedule == '30 12 * * *' || github.event_name == 'workflow_dispatch'
         env:
-          RELEASE_VERSION: ${{ steps.release-selector.outputs.RELEASE_VERSION }}
+          RELEASE_VERSION: ${{ needs.get-tag.outputs.release_version }}
         with:
           tag: "bdcc.${{ env.RELEASE_VERSION }}"
           prerelease: true
@@ -371,7 +384,7 @@ jobs:
         uses: ncipollo/release-action@v1.14.0
         if: github.event.schedule == '0 14 1 * *' || github.ref_type == 'tag'
         env:
-          RELEASE_VERSION: ${{ steps.release-selector.outputs.RELEASE_VERSION }}
+          RELEASE_VERSION: ${{ needs.get-tag.outputs.release_version }}
         with:
           tag: "${{ env.RELEASE_VERSION }}"
           prerelease: false
