@@ -117,7 +117,7 @@ jobs:
         env:
           PYTHONIOENCODING: utf-8  # 如果是 Python 脚本
         run: |
-          dotnet run --project BDCCChineseLocalization Translate ${{ env.PARATRANZ_TOKEN }} ${{ env.PARATRANZ_PROJECT }} -v ${{ needs.get-tag.outputs.release_version }}
+          dotnet run --project BDCCChineseLocalization -- Translate ${{ env.PARATRANZ_TOKEN }} ${{ env.PARATRANZ_PROJECT }} -v ${{ needs.get-tag.outputs.release_version }}
       - name: Upload translation artifact when failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
