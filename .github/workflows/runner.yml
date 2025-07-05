@@ -3,7 +3,6 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '30 12 * * *'
-    - cron : '0 14 1 * *'
   push:
     tags:
       - 'v*'
@@ -33,30 +32,6 @@ jobs:
         id: daily-version
         run: |
           echo "RELEASE_VERSION=$(date "+%y.%m.%d")" >> $GITHUB_OUTPUT
-      - name: Set auto-bump release version
-        if: github.event.schedule == '0 14 1 * *'
-        id: auto-bump-version
-        run: |
-          # get the newest tag and bump the version, for example: v0.1.8fix3-chs-1.0.2a -> v0.1.8fix3-chs-1.1.0a
-          # ORIGINAL_VERSION: v0.1.8fix3
-          # get the newest tag
-          NEWEST_TAG=$(git tag -l "v*" --sort=-version:refname | head -n 1)
-          # get the version number
-          VERSION_NUMBER=$(echo $NEWEST_TAG | awk -F '-' '{print $NF}')
-          ORIGINAL_VERSION=$(echo $NEWEST_TAG | awk -F '-' '{print $1}')
-          # get the version number by delete the last character (might be a, b or r)
-          VERSION_NUMBER_WITHOUT_SUFFIX="${VERSION_NUMBER%?}"
-          VERSION_TYPE="${VERSION_NUMBER: -1}"
-          # get all three version number
-          FIRST_VERSION_NUMBER=$(echo $VERSION_NUMBER_WITHOUT_SUFFIX | awk -F '.' '{print $1}')
-          SECOND_VERSION_NUMBER=$(echo $VERSION_NUMBER_WITHOUT_SUFFIX | awk -F '.' '{print $2}')
-          THIRD_VERSION_NUMBER=$(echo $VERSION_NUMBER_WITHOUT_SUFFIX | awk -F '.' '{print $3}')
-          # bump the second version number
-          NEW_VERSION_NUMBER=$(expr $SECOND_VERSION_NUMBER + 1)
-          # concat the version
-          NEW_VERSION=${ORIGINAL_VERSION}-chs-${FIRST_VERSION_NUMBER}.${NEW_VERSION_NUMBER}.0${VERSION_TYPE}
-          
-          echo "RELEASE_VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
       - name: Set push-tag release version
         if: github.ref_type == 'tag'
         id: push-tag-version
@@ -68,8 +43,6 @@ jobs:
         run: |
           if [[ "${{ steps.daily-version.outputs.RELEASE_VERSION }}" != "" ]]; then
             RV="${{ steps.daily-version.outputs.RELEASE_VERSION }}"
-          elif [[ "${{ steps.auto-bump-version.outputs.RELEASE_VERSION }}" != "" ]]; then
-            RV="${{ steps.auto-bump-version.outputs.RELEASE_VERSION }}"
           elif [[ "${{ steps.push-tag-version.outputs.RELEASE_VERSION }}" != "" ]]; then
             RV="${{ steps.push-tag-version.outputs.RELEASE_VERSION }}"
           else
@@ -382,7 +355,7 @@ jobs:
             *.apk
       - name: Automatic Releases
         uses: ncipollo/release-action@v1.14.0
-        if: github.event.schedule == '0 14 1 * *' || github.ref_type == 'tag'
+        if: github.ref_type == 'tag'
         env:
           RELEASE_VERSION: ${{ needs.get-tag.outputs.release_version }}
         with:
