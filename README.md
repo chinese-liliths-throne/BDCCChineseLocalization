@@ -117,6 +117,12 @@
 <details>
 <summary>点击展开</summary>
 
+- 2025.7.5
+  - 发布 `v0.1.9fix1-chs-1.0.2a` 版
+    - 催眠提示词现在能正常发挥作用
+    - 修复了斗牛犬做爱场景选择“呃………”时进入空场景的问题
+    - 调整汉化、补充缺失的汉化
+
 - 2025.6.29
   - 发布 `v0.1.9fix1-chs-1.0.1a` 版
     - 修复部分文本爆红的问题
@@ -141,5 +147,6 @@
 [github-dol]: https://github.com/Eltirosto/Degrees-of-Lewdity-Chinese-Localization/tree/main
 [discord]: https://discord.gg/7UGYBvQrc3
 [discord-zh]: https://discord.gg/hqj7WA7PKp
+okjjjjjjj
 [releases-latest]: https://github.com/chinese-liliths-throne/BDCCChineseLocalization/releases/latest
 [issues]: https://github.com/chinese-liliths-throne/BDCCChineseLocalization/issues
