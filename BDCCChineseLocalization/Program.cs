@@ -311,9 +311,9 @@ public class Program
         {
             await PythonTranslateReplace();
         }
-        catch (PythonException e)
+        catch (PythonException)
         {
-            throw e;
+            throw;
         }
         finally
         {
