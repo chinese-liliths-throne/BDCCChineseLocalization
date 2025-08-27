@@ -28,7 +28,7 @@ jobs:
           lfs: true
 
       - name: Set pre-release version
-        if: github.event.schedule == '30 12 * * *' || github.event_name == 'workflow_dispatch'
+        if: github.event.schedule == '30 12 * * 1' || github.event_name == 'workflow_dispatch'
         id: daily-version
         run: |
           echo "RELEASE_VERSION=$(date "+%y.%m.%d")" >> $GITHUB_OUTPUT
