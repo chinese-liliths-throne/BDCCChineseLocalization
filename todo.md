@@ -6,3 +6,4 @@
 * [ ] 部分写在tscn中的文本不方便提取或翻译
     * 如 ModMaker.tscn 中的 items
     * TabContainer 节点使用了子节点的名称作为显示，不方便翻译
+* [ ] 1.9更新的SexEngine重构可能存在不少问题，需要进一步检查
