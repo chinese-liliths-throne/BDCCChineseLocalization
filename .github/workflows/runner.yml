@@ -258,6 +258,9 @@ jobs:
       - name: Delete Zip
         run: |
           rm -rf ./build/web/BDCC-WEB.zip
+      - name: Track lfs
+        run: |
+            git lfs track "*.pck"
       - name: Install rsync 📚
         run: |
             apt-get update && apt-get install -y rsync
