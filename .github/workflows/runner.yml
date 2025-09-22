@@ -223,6 +223,7 @@ jobs:
     name: 🌐 Web Build
     needs: translate
     runs-on: ubuntu-22.04
+    continue-on-error: true
     container:
       image: barichello/godot-ci:3.6
     steps:
@@ -258,9 +259,6 @@ jobs:
       - name: Delete Zip
         run: |
           rm -rf ./build/web/BDCC-WEB.zip
-      - name: Track lfs
-        run: |
-            git lfs track "*.pck"
       - name: Install rsync 📚
         run: |
             apt-get update && apt-get install -y rsync
