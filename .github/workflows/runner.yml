@@ -259,14 +259,24 @@ jobs:
       - name: Delete Zip
         run: |
           rm -rf ./build/web/BDCC-WEB.zip
-      - name: Install rsync 📚
+      - name: Install required packages 📚
         run: |
-            apt-get update && apt-get install -y rsync
-      - name: Deploy to GitHub Pages 🚀
-        uses: JamesIves/github-pages-deploy-action@releases/v4
-        with:
-          branch: gh-pages # The branch the action should deploy to.
-          folder: build/web # The folder the action should deploy.
+            apt-get update && apt-get install -y git-lfs curl jq bc
+      - name: Check file sizes 📏
+        run: |
+          echo "🔍 检查构建文件大小..."
+          find ./build/web -type f -exec ls -lh {} \; | sort -k5 -hr | head -20
+          echo ""
+          echo "📊 大文件统计（>50MB）："
+          find ./build/web -type f -size +50M -exec ls -lh {} \; || echo "  没有发现大于50MB的文件"
+      - name: Make deploy script executable 🔧
+        run: |
+          chmod +x .github/scripts/deploy-with-lfs.sh
+      - name: Deploy to GitHub Pages with Git LFS 🚀
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          .github/scripts/deploy-with-lfs.sh build/web ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} gh-pages
   android-build:
     name: 🤖 Android Build
     needs: translate
