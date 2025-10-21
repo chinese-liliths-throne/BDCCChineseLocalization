@@ -245,7 +245,7 @@ jobs:
         run: |
           mkdir -v -p ./build/web
           cd BdccChineseLocalization
-          godot --headless --export-release "HTML5" ../build/web/index.html
+          godot --headless --export "HTML5" ../build/web/index.html
       - name: Zip
         run: |
           cd ./build/web/
@@ -256,12 +256,6 @@ jobs:
           name: bdcc-web
           path: ./build/web/BDCC-WEB.zip
           retention-days: 7
-      - name: Delete Zip
-        run: |
-          rm -rf ./build/web/BDCC-WEB.zip
-      - name: Install required packages 📚
-        run: |
-            apt-get update && apt-get install -y git-lfs curl jq bc
       - name: Check file sizes 📏
         run: |
           echo "🔍 检查构建文件大小..."
@@ -269,14 +263,6 @@ jobs:
           echo ""
           echo "📊 大文件统计（>50MB）："
           find ./build/web -type f -size +50M -exec ls -lh {} \; || echo "  没有发现大于50MB的文件"
-      - name: Make deploy script executable 🔧
-        run: |
-          chmod +x .github/scripts/deploy-with-lfs.sh
-      - name: Deploy to GitHub Pages with Git LFS 🚀
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          .github/scripts/deploy-with-lfs.sh build/web ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} gh-pages
   android-build:
     name: 🤖 Android Build
     needs: translate
@@ -378,3 +364,10 @@ jobs:
           artifacts: |
             *.zip
             *.apk
+      
+      # Trigger Jekyll deployment workflow for non-prerelease releases
+      - name: Trigger Jekyll deployment
+        if: github.ref_type == 'tag'
+        run: |
+          echo "Triggering Jekyll deployment for release ${{ needs.get-tag.outputs.release_version }}"
+          # This will be automatically triggered by the release event

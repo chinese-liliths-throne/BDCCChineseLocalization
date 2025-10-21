@@ -2,9 +2,9 @@
 name: Deploy Jekyll with GitHub Pages dependencies preinstalled
 
 on:
-  # Runs on pushes targeting the default branch
-  push:
-    branches: ["master"]
+  # Runs on release creation
+  release:
+    types: [published]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -28,15 +28,53 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      
+      # Download BDCC-WEB.zip from release if triggered by release
+      - name: Download BDCC-WEB from release
+        if: github.event_name == 'release'
+        run: |
+          # Get the release tag
+          RELEASE_TAG="${{ github.event.release.tag_name }}"
+          echo "Processing release: $RELEASE_TAG"
+          
+          # Find BDCC-WEB.zip asset URL
+          ASSET_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/tags/$RELEASE_TAG" | \
+            jq -r '.assets[] | select(.name == "BDCC-WEB.zip") | .url')
+          
+          if [ -z "$ASSET_URL" ]; then
+            echo "BDCC-WEB.zip not found in release $RELEASE_TAG"
+            exit 1
+          fi
+          
+          echo "Found BDCC-WEB.zip at: $ASSET_URL"
+          
+          # Download the asset
+          curl -L -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/octet-stream" \
+            "$ASSET_URL" -o BDCC-WEB.zip
+          
+          # Create web directory and extract
+          mkdir -p web
+          unzip BDCC-WEB.zip -d web/
+          
+          # Create Jekyll structure if it doesn't exist
+          mkdir -p _site
+          cp -r web/* _site/
+      
       - name: Setup Pages
         uses: actions/configure-pages@v5
+      
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
           source: ./
           destination: ./_site
+      
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
 
   # Deployment job
   deploy:
