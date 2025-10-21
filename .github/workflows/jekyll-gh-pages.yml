@@ -4,7 +4,7 @@ name: Deploy Jekyll with GitHub Pages dependencies preinstalled
 on:
   # Runs on release creation
   release:
-    types: [published]
+    types: [published, prereleased, released, edited]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -41,10 +41,6 @@ jobs:
           # Create web directory and extract
           mkdir -p web
           unzip BDCC-WEB.zip -d web/
-          
-          # Create Jekyll structure if it doesn't exist
-          mkdir -p _site
-          cp -r web/* _site/
       
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -52,7 +48,7 @@ jobs:
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
-          source: ./
+          source: ./web
           destination: ./_site
       
       - name: Upload artifact

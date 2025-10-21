@@ -186,6 +186,5 @@
 [github-dol]: https://github.com/Eltirosto/Degrees-of-Lewdity-Chinese-Localization/tree/main
 [discord]: https://discord.gg/7UGYBvQrc3
 [discord-zh]: https://discord.gg/hqj7WA7PKp
-okjjjjjjj
 [releases-latest]: https://github.com/chinese-liliths-throne/BDCCChineseLocalization/releases/latest
 [issues]: https://github.com/chinese-liliths-throne/BDCCChineseLocalization/issues
