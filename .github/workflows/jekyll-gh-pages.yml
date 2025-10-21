@@ -8,6 +8,12 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+  
+  # Also trigger on workflow completion from runner
+  workflow_run:
+    workflows: ["Build BDCC Chinese Localization Nightly"]
+    types:
+      - completed
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
