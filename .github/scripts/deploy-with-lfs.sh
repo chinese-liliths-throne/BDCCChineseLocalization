@@ -8,8 +8,13 @@ GITHUB_TOKEN="${2:-$GITHUB_TOKEN}"
 REPO="${3:-$GITHUB_REPOSITORY}"
 BRANCH="${4:-gh-pages}"
 
+# 获取当前工作目录（从 workflow 调用时就是项目根目录）
+WORKSPACE_DIR="$(pwd)"
+BUILD_ABS_PATH="$WORKSPACE_DIR/$BUILD_DIR"
+
 echo "🚀 开始使用 Git LFS 部署到 GitHub Pages"
-echo "📁 构建目录: $BUILD_DIR"
+echo "📁 工作目录: $WORKSPACE_DIR"
+echo "📁 构建目录: $BUILD_ABS_PATH"
 echo "🌐 仓库: $REPO"
 echo "🌿 分支: $BRANCH"
 
@@ -18,17 +23,14 @@ command -v git >/dev/null 2>&1 || { echo "❌ git 未安装"; exit 1; }
 command -v git-lfs >/dev/null 2>&1 || { echo "❌ git-lfs 未安装"; exit 1; }
 
 # 检查构建目录是否存在
-if [ ! -d "$BUILD_DIR" ]; then
-    echo "❌ 构建目录不存在: $BUILD_DIR"
+if [ ! -d "$BUILD_ABS_PATH" ]; then
+    echo "❌ 构建目录不存在: $BUILD_ABS_PATH"
     exit 1
 fi
 
-# 进入构建目录
-cd "$BUILD_DIR"
-
 # 查找大文件（大于 50MB 的文件）
 echo "🔍 检查大文件..."
-LARGE_FILES=$(find . -type f -size +50M -not -path './.git/*' | head -20)
+LARGE_FILES=$(find "$BUILD_ABS_PATH" -type f -size +50M -not -path '*/.git/*' | head -20)
 
 if [ -n "$LARGE_FILES" ]; then
     echo "📦 发现以下大文件，将使用 Git LFS 管理："
@@ -39,9 +41,6 @@ if [ -n "$LARGE_FILES" ]; then
 else
     echo "ℹ️ 没有发现大文件"
 fi
-
-# 返回上级目录准备克隆
-cd ..
 
 # 设置 Git 配置
 git config --global user.name "GitHub Actions"
@@ -74,9 +73,9 @@ if [ -n "$LARGE_FILES" ]; then
     
     # 为特定的大文件设置跟踪
     echo "$LARGE_FILES" | while read -r file; do
-        if [ -f "../$BUILD_DIR/$file" ]; then
-            # 获取相对路径
-            rel_path=$(echo "$file" | sed 's|^\./||')
+        if [ -f "$file" ]; then
+            # 获取相对于构建目录的路径
+            rel_path=$(realpath --relative-to="$BUILD_ABS_PATH" "$file")
             echo "$rel_path filter=lfs diff=lfs merge=lfs -text" >> .gitattributes
             echo "  ✓ 设置 $rel_path 使用 Git LFS"
         fi
@@ -89,12 +88,12 @@ find . -maxdepth 1 ! -name '.git' ! -name '.gitattributes' ! -name '.' -exec rm 
 
 # 复制新文件
 echo "📋 复制新文件..."
-cp -r "../$BUILD_DIR"/* .
+cp -r "$BUILD_ABS_PATH"/* .
 
 # 如果有 .gitattributes 文件在构建目录中，保留我们的设置
-if [ -f "../$BUILD_DIR/.gitattributes" ]; then
+if [ -f "$BUILD_ABS_PATH/.gitattributes" ]; then
     echo "📋 合并 .gitattributes 设置..."
-    cat "../$BUILD_DIR/.gitattributes" >> .gitattributes
+    cat "$BUILD_ABS_PATH/.gitattributes" >> .gitattributes
     # 去重
     sort -u .gitattributes > .gitattributes.tmp && mv .gitattributes.tmp .gitattributes
 fi
