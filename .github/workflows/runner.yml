@@ -245,7 +245,7 @@ jobs:
         run: |
           mkdir -v -p ./build/web
           cd BdccChineseLocalization
-          godot --headless --export "HTML5" ../build/web/index.html
+          godot --headless --export-release "HTML5" ../build/web/index.html
       - name: Zip
         run: |
           cd ./build/web/
