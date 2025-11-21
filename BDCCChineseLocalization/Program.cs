@@ -8,9 +8,6 @@ using BDCCChineseLocalization.Paratranz;
 using CommandDotNet;
 using GDShrapt.Reader;
 using Newtonsoft.Json;
-using Python.Deployment;
-using Python.Runtime;
-using Installer = Python.Included.Installer;
 using TscnParser = BDCCChineseLocalization.TscnParser;
 
 public class ErrorFile
@@ -319,10 +316,9 @@ public class Program
         try
         {
             Console.WriteLine("Running python script");
-            await PythonTranslateReplace();
-            Console.WriteLine("Python script finished");
+            await CommandLineTranslateReplace();
         }
-        catch (PythonException)
+        catch (Exception)
         {
             throw;
         }
@@ -412,74 +408,48 @@ public class Program
         }
     }
 
-    public async Task PythonTranslateReplace()
+    public async Task CommandLineTranslateReplace()
     {
-        Console.WriteLine("Setting up python");
-        await Installer.SetupPython(true);
-        Console.WriteLine("Python setup complete");
-        var requirements = (
-            await File.ReadAllTextAsync(
-                Path.GetFullPath("BDCC-Localization-Replacer/requirements.txt")
-            )
-        )
-            .Replace("\r\n", "\n")
-            .Split("\n");
-        Console.WriteLine("Installing python requirements");
-        foreach (
-            var requirement in requirements.Where(
-                x => !string.IsNullOrWhiteSpace(x) && !x.StartsWith($"#")
-            )
-        )
-        {
-            Console.WriteLine($"Installing {requirement}");
-            if (
-                requirement.Contains("==")
-                || requirement.Contains(">=")
-                || requirement.Contains("<=")
-            )
-            {
-                var index = requirement.IndexOf("==", StringComparison.Ordinal);
-                if (index == -1)
-                {
-                    index = requirement.IndexOf(">=", StringComparison.Ordinal);
-                }
-                if (index == -1)
-                {
-                    index = requirement.IndexOf("<=", StringComparison.Ordinal);
-                }
-                var module = requirement[..index].Trim();
-                var version = requirement[(index + 2)..].Trim();
-                await Installer.PipInstallModule(module, version);
-                continue;
-            }
-            await Installer.PipInstallModule(requirement);
-        }
-        PythonEngine.Initialize();
-        PythonEngine.BeginAllowThreads();
-        var buildSrc = Path.GetFullPath("BDCC-Localization-Replacer/main.py");
-        using (Py.GIL())
-        {
-            // var main = PythonEngine.Compile(code, src, RunFlagType.File);
+        var bdccLocalizationReplacerPath = Path.GetFullPath("BDCC-Localization-Replacer");
 
-            dynamic os = Py.Import("os");
-            dynamic sys = Py.Import("sys");
-            // // Console.WriteLine(os.path.dirname(os.path.expanduser(filePath)));
-            sys.path.append(os.path.dirname(os.path.expanduser(buildSrc)));
-            // main.Invoke();
-            // Console.WriteLine(sys.path);
-            var fromFile = Py.Import(Path.GetFileNameWithoutExtension(buildSrc));
-            //
-            Console.WriteLine("Running python translate_new");
-            fromFile.InvokeMethod("translate_new");
-            Console.WriteLine("Python translate_new finished");
+        var pythonPsi = new ProcessStartInfo
+        {
+            FileName = "python",
+            Arguments = "main.py",
+            WorkingDirectory = bdccLocalizationReplacerPath,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+
+        Console.WriteLine("Running python script...");
+        using var pythonProcess = Process.Start(pythonPsi);
+        if (pythonProcess == null)
+        {
+            Console.WriteLine("Failed to start python process.");
+            return;
         }
-        // PythonEngine.Shutdown();
-        Console.WriteLine("Done");
+
+        var pythonOutput = await pythonProcess.StandardOutput.ReadToEndAsync();
+        var pythonError = await pythonProcess.StandardError.ReadToEndAsync();
+        await pythonProcess.WaitForExitAsync();
+
+        if (!string.IsNullOrEmpty(pythonOutput))
+        {
+            Console.WriteLine(pythonOutput);
+        }
+
+        if (pythonProcess.ExitCode != 0)
+        {
+            Console.Error.WriteLine(pythonError);
+            throw new Exception("python script failed");
+        }
     }
 
     public async Task TestScript()
     {
-        await PythonTranslateReplace();
+        await CommandLineTranslateReplace();
     }
 
     public async Task TestErrorFiles(string path = "output")
