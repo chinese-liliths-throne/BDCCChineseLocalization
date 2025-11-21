@@ -108,9 +108,11 @@ public class Program
         var completed = 0;
         TranslationHashIndexFile.SetDir(currentDir);
         TranslationHashIndexFile.Instance.Load();
+        Console.WriteLine($"Found {gdFiles.Length} gd files");
+        Console.WriteLine($"Found {tscnFiles.Length} tscn files");
         foreach (var gdFile in gdFiles)
         {
-            // Console.WriteLine($"Extracting file {file}");
+            Console.WriteLine($"Extracting file {gdFile}");
             try
             {
                 var fileName = Path.GetFileNameWithoutExtension(gdFile);
@@ -143,16 +145,19 @@ public class Program
                     paratranzFilePath,
                     ParatranzConverter.Serialize(parser.Tokens)
                 );
+                Console.WriteLine($"Extracted file {paratranzFilePath}");
                 completed++;
             }
             catch (Exception e)
             {
+                Console.WriteLine(e);
                 errorFiles.Add(new ErrorFile(gdFile, e));
             }
         }
 
         foreach (var tscnFile in tscnFiles)
         {
+            Console.WriteLine($"Extracting file {tscnFile}");
             try
             {
                 var fileName = Path.GetFileNameWithoutExtension(tscnFile);
@@ -179,6 +184,7 @@ public class Program
                     paratranzFilePath,
                     ParatranzConverter.Serialize(parser.Tokens)
                 );
+                Console.WriteLine($"Extracted file {paratranzFilePath}");
             }
             catch (Exception e)
             {
@@ -261,10 +267,12 @@ public class Program
         // TranslationHashIndexFile.Instance.Load();
         var client = new ParatranzClient(api);
         var cancellationToken = new CancellationToken();
+        Console.WriteLine($"Downloading artifact from project {projectId}");
         var stream = await client.DownloadArtifactAsync(projectId, cancellationToken);
         await using var fileStream = File.Create(artifactFilePath);
         await stream.CopyToAsync(fileStream, cancellationToken);
         fileStream.Close();
+        Console.WriteLine($"Downloaded artifact to {artifactFilePath}");
 
         if (!Directory.Exists(inputPath))
         {
@@ -276,6 +284,7 @@ public class Program
         //     Console.WriteLine($"Translation path {translation} does not exist");
         //     return;
         // }
+        Console.WriteLine($"Extracting artifact to {artifactDirPath}");
         ZipFile.ExtractToDirectory(artifactFilePath, artifactDirPath);
         var extractedDirPath = Path.Combine(artifactDirPath, "utf8");
         var fetchDirPath = Path.Combine(bdccLocalizationReplacerPath, "fetch");
@@ -309,7 +318,9 @@ public class Program
 
         try
         {
+            Console.WriteLine("Running python script");
             await PythonTranslateReplace();
+            Console.WriteLine("Python script finished");
         }
         catch (PythonException)
         {
@@ -403,7 +414,9 @@ public class Program
 
     public async Task PythonTranslateReplace()
     {
+        Console.WriteLine("Setting up python");
         await Installer.SetupPython(true);
+        Console.WriteLine("Python setup complete");
         var requirements = (
             await File.ReadAllTextAsync(
                 Path.GetFullPath("BDCC-Localization-Replacer/requirements.txt")
@@ -411,12 +424,14 @@ public class Program
         )
             .Replace("\r\n", "\n")
             .Split("\n");
+        Console.WriteLine("Installing python requirements");
         foreach (
             var requirement in requirements.Where(
                 x => !string.IsNullOrWhiteSpace(x) && !x.StartsWith($"#")
             )
         )
         {
+            Console.WriteLine($"Installing {requirement}");
             if (
                 requirement.Contains("==")
                 || requirement.Contains(">=")
@@ -454,7 +469,9 @@ public class Program
             // Console.WriteLine(sys.path);
             var fromFile = Py.Import(Path.GetFileNameWithoutExtension(buildSrc));
             //
+            Console.WriteLine("Running python translate_new");
             fromFile.InvokeMethod("translate_new");
+            Console.WriteLine("Python translate_new finished");
         }
         // PythonEngine.Shutdown();
         Console.WriteLine("Done");
