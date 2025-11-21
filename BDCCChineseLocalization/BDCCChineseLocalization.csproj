@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Paratranz.NET\Paratranz.NET\Paratranz.NET.csproj" />
+      <ProjectReference Include="..\Paratranz.NET\Paratranz.NET\Paratranz.NET\Paratranz.NET.csproj" />
     </ItemGroup>
 
 </Project>
