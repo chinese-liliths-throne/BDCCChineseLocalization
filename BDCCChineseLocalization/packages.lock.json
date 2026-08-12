@@ -47,26 +47,6 @@
           "System.Text.Json": "7.0.3"
         }
       },
-      "Python.Included": {
-        "type": "Direct",
-        "requested": "[3.11.6, )",
-        "resolved": "3.11.6",
-        "contentHash": "aNkCKmk7Rb/nZP9jqvwyI9pL5GWhAYAVLcjC0LzrQjlQJYiFXmUoUOb+vQ/sPrQq+2ynlkfbsnekD5K5tvueKg==",
-        "dependencies": {
-          "Python.Deployment": "2.0.5",
-          "pythonnet": "3.0.1"
-        }
-      },
-      "pythonnet": {
-        "type": "Direct",
-        "requested": "[3.1.0-preview2024-07-03, )",
-        "resolved": "3.1.0-preview2024-07-03",
-        "contentHash": "hlKtMwYZzlilrlgkpzfKtTxmUF4zeE4wXcF7yXFZOehJliavw5PDInmq3sfjQ9AUDCVKdXensnyj0CpHuJdVSg==",
-        "dependencies": {
-          "Microsoft.CSharp": "4.7.0",
-          "System.Reflection.Emit": "4.3.0"
-        }
-      },
       "Righthand.GodotTscnParser": {
         "type": "Direct",
         "requested": "[1.0.0-beta.1, )",
@@ -137,11 +117,6 @@
         "resolved": "4.0.0",
         "contentHash": "rpts69yYgvJqg6PPgqShBQEZ4aNzWQqWpWppcT0oDWxDCIsBqiod4pj6LQZdhk+1OozLFagemldMRACdHF3CsA=="
       },
-      "Microsoft.CSharp": {
-        "type": "Transitive",
-        "resolved": "4.7.0",
-        "contentHash": "pTj+D3uJWyN3My70i2Hqo+OXixq3Os2D1nJ2x92FFo6sk8fYS1m1WLNTs0Dc1uPaViH0YvEEwvzddQ7y4rhXmA=="
-      },
       "Microsoft.NETCore.Platforms": {
         "type": "Transitive",
         "resolved": "1.1.0",
@@ -151,11 +126,6 @@
         "type": "Transitive",
         "resolved": "1.1.0",
         "contentHash": "aOZA3BWfz9RXjpzt0sRJJMjAscAUm3Hoa4UWAfceV9UTYxgwZ1lZt5nO2myFf+/jetYQo4uTP7zS8sJY67BBxg=="
-      },
-      "Python.Deployment": {
-        "type": "Transitive",
-        "resolved": "2.0.5",
-        "contentHash": "U+hZ6L5tgPjX9bA/+K2rVQ94MNWGld+HIH78ULZ5ogfwVNvesaIEXhvKPLA6O6YuQF406Uw3WBLTCRlCpMC2QQ=="
       },
       "runtime.native.System": {
         "type": "Transitive",
@@ -274,28 +244,6 @@
           "System.Runtime": "4.3.0"
         }
       },
-      "System.Reflection.Emit": {
-        "type": "Transitive",
-        "resolved": "4.3.0",
-        "contentHash": "228FG0jLcIwTVJyz8CLFKueVqQK36ANazUManGaJHkO0icjiIypKW7YLWLIWahyIkdh5M7mV2dJepllLyA1SKg==",
-        "dependencies": {
-          "System.IO": "4.3.0",
-          "System.Reflection": "4.3.0",
-          "System.Reflection.Emit.ILGeneration": "4.3.0",
-          "System.Reflection.Primitives": "4.3.0",
-          "System.Runtime": "4.3.0"
-        }
-      },
-      "System.Reflection.Emit.ILGeneration": {
-        "type": "Transitive",
-        "resolved": "4.3.0",
-        "contentHash": "59tBslAk9733NXLrUJrwNZEzbMAcu8k344OYo+wfSVygcgZ9lgBdGIzH/nrg3LYhXceynyvTc8t5/GD4Ri0/ng==",
-        "dependencies": {
-          "System.Reflection": "4.3.0",
-          "System.Reflection.Primitives": "4.3.0",
-          "System.Runtime": "4.3.0"
-        }
-      },
       "System.Reflection.Primitives": {
         "type": "Transitive",
         "resolved": "4.3.0",
@@ -403,11 +351,7 @@
         }
       },
       "paratranz.net": {
-        "type": "Project",
-        "dependencies": {
-          "Flurl": "[3.0.7, )",
-          "System.IO.Compression": "[4.3.0, )"
-        }
+        "type": "Project"
       }
     }
   }
