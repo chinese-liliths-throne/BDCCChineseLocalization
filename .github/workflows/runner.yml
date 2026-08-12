@@ -303,9 +303,9 @@ jobs:
           mkdir -v -p ./build/android
           cd BdccChineseLocalization
           echo 'export/android/android_sdk_path = "/usr/lib/android-sdk"' >> ~/.config/godot/editor_settings-3.tres
-          echo "${{ secrets.ANDROID_KEYSTORE_FILE }}" | base64 --decode > $GITHUB_WORKSPACE/debug.keystore
-          sed 's@keystore/debug=".*"@keystore/debug="'$GITHUB_WORKSPACE/debug.keystore'"@g' -i export_presets.cfg
-          sed 's@keystore/release=".*"@keystore/release="'$GITHUB_WORKSPACE/debug.keystore'"@g' -i export_presets.cfg
+          echo "${{ secrets.ANDROID_KEYSTORE_FILE }}" | base64 --decode > $GITHUB_WORKSPACE/release.keystore
+          sed -i 's@keystore/release=".*"@keystore/release="'$GITHUB_WORKSPACE/release.keystore'"@g' export_presets.cfg
+          sed -i 's@keystore/release_password=".*"@keystore/release_password="'${{ secrets.ANDROID_KEYSTORE_PASSWORD }}'"@g' export_presets.cfg
           godot --headless --export "Android" ../build/android/${EXPORT_NAME}-Android.apk
       - name: Upload artifact
         uses: actions/upload-artifact@v4
