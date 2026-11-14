@@ -16,12 +16,26 @@ git submodule update --init --recursive --remote
 #    提交在 chinese 分支上，不能只留在工作树里。
 git -C BDCC fetch --quiet origin
 git -C BDCC reset --hard "origin/${SUBMODULE_BRANCH}"
-if [ -n "$(git -C BDCC status --porcelain)" ]; then
+# .mono/ .import/ .godot/ 是 Godot 生成的未跟踪目录，不算脏改动；其余一律拦下
+dirty="$(git -C BDCC status --porcelain --untracked-files=normal \
+  | grep -vE '^\?\? \.(mono|import|godot)/' || true)"
+if [ -n "$dirty" ]; then
   echo "错误: BDCC 工作树仍有改动，先处理再继续：" >&2
-  git -C BDCC status --porcelain >&2
+  echo "$dirty" >&2
   exit 1
 fi
 
-# 3) 提取 → 合并 → 替换 → 校验 → 打包
+# 3) Python 解释器：优先用工具子模块里的 .venv（CI 里 deps 装在系统 python 上）
+if [ -z "${PYTHON:-}" ] && [ -x "BDCC-Localization-Replacer/.venv/Scripts/python.exe" ]; then
+  PYTHON="$(pwd)/BDCC-Localization-Replacer/.venv/Scripts/python.exe"
+  # git-bash/MSYS 下 $(pwd) 是 /e/... 形式，.NET 起进程需要 Windows 原生路径
+  if command -v cygpath >/dev/null 2>&1; then
+    PYTHON="$(cygpath -w "$PYTHON")"
+  fi
+fi
+export PYTHON="${PYTHON:-}"
+if [ -n "$PYTHON" ]; then echo "使用 Python: $PYTHON"; fi
+
+# 4) 提取 → 合并 → 替换 → 校验 → 打包
 dotnet run --project BDCCChineseLocalization -- Translate \
   "$PARATRANZ_TOKEN" "$PARATRANZ_PROJECT" -v "$TRANSLATION_VERSION"

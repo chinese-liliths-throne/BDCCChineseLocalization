@@ -379,6 +379,12 @@ public class Program
         {
             foreach (DirectoryInfo subDir in dirs)
             {
+                // 本地是完整克隆时 .git 有 GB 级；CI 里子模块的 .git 是文件。
+                // 打包不需要版本库元数据，跳过。
+                if (subDir.Name == ".git")
+                {
+                    continue;
+                }
                 string newDestinationDir = Path.Combine(destinationDir, subDir.Name);
                 CopyDirectory(subDir.FullName, newDestinationDir, true);
             }
@@ -414,7 +420,8 @@ public class Program
 
         var pythonPsi = new ProcessStartInfo
         {
-            FileName = "python",
+            // 允许用环境变量指定解释器（本地指向 .venv），CI 里退回 "python"
+            FileName = Environment.GetEnvironmentVariable("PYTHON") is { Length: > 0 } py ? py : "python",
             Arguments = "main.py",
             WorkingDirectory = bdccLocalizationReplacerPath,
             RedirectStandardOutput = true,
