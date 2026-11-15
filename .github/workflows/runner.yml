@@ -336,6 +336,7 @@ jobs:
       - name: Create release.md
         shell: python
         run: |
+          import re
           import marko
           from marko import Markdown
           parser = Markdown()
@@ -345,6 +346,18 @@ jobs:
           update_log = [node for node in document.children if isinstance(node, marko.block.List)][-1]
           latest_log = update_log.children[0]
           release_text = parser.render(latest_log)
+          # 附上游戏本体最新一次更新的中文翻译（CHANGELOG.zh-CN.md 的第一个版本小节）
+          try:
+            with open("CHANGELOG.zh-CN.md", "r") as f:
+              zh_log = f.read()
+            body = zh_log.split("\n---\n", 1)[1] if "\n---\n" in zh_log else zh_log
+            section = re.search(r"^## \[[^\]]+\].*?(?=^## \[|\Z)", body, re.S | re.M)
+            if section:
+              # 标题降一级，避免和上面的汉化更新日志抢层级
+              demoted = re.sub(r"^(#{2,5}) ", r"#\1 ", section.group(0).strip(), flags=re.M)
+              release_text += "\n\n---\n\n### 游戏本体更新内容\n\n" + demoted + "\n"
+          except FileNotFoundError:
+            print("CHANGELOG.zh-CN.md not found, skipping game changelog section")
           with open("release.md", "w") as f:
             f.write(release_text)
       - name: Automatic Pre Releases
