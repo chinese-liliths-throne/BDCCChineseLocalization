@@ -37,8 +37,9 @@ jobs:
         if: github.ref_type == 'tag'
         id: push-tag-version
         run: |
-          NEWEST_TAG=$(git tag -l "v*" --sort=-version:refname | head -n 1)
-          echo "RELEASE_VERSION=$NEWEST_TAG" >> $GITHUB_OUTPUT
+          # 必须用「本次推送的 tag」，不能用「仓库里最大的 v* tag」
+          # 否则热修补丁（版本号小于历史 tag）会构建/发布成错误的版本
+          echo "RELEASE_VERSION=${{ github.ref_name }}" >> $GITHUB_OUTPUT
       - name: Set Release version env variable
         id: release-selector
         run: |
@@ -101,6 +102,9 @@ jobs:
           PYTHONIOENCODING: utf-8  # 如果是 Python 脚本
         run: |
           dotnet run --project BDCCChineseLocalization -- Translate ${{ env.PARATRANZ_TOKEN }} ${{ env.PARATRANZ_PROJECT }} -v ${{ needs.get-tag.outputs.release_version }}
+      - name: Quality gate (标识符 / BBCode)
+        run: python BDCC-Localization-Replacer/scripts/quality_gate.py
+
       - name: Upload translation artifact when failure
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
