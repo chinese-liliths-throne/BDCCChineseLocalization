@@ -103,6 +103,8 @@ jobs:
         run: |
           dotnet run --project BDCCChineseLocalization -- Translate ${{ env.PARATRANZ_TOKEN }} ${{ env.PARATRANZ_PROJECT }} -v ${{ needs.get-tag.outputs.release_version }}
       - name: Quality gate (标识符 / BBCode)
+        env:
+          PYTHONIOENCODING: utf-8   # windows runner 默认 cp1252，中文输出会炸
         run: python BDCC-Localization-Replacer/scripts/quality_gate.py
 
       - name: Upload translation artifact when failure
